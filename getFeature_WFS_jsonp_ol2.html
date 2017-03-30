@@ -1,0 +1,54 @@
+﻿<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>wmts example</title>
+<head>
+    <script type="text/javascript" src="../CDN/lib/ol/v2.13.1/OpenLayers.js"></script>
+    <script src="../CDN/lib/jQuery/jQuery-1.11.1.js"></script>
+    <script type="text/javascript">
+        var map, wfs;
+        OpenLayers.Util.onImageLoadErrorColor = 'transparent';
+        function init() {
+
+        }
+
+
+        var filter_1_1 = new OpenLayers.Format.Filter({version: "1.1.0"});
+        var xml = new OpenLayers.Format.XML();
+        var filter = new OpenLayers.Filter.Comparison({
+            type: OpenLayers.Filter.Comparison.EQUAL_TO,
+            /*property: "NAME",
+            value: "清华超市"*/
+            property: "FCODE",
+            value: "161101"
+        });
+        var str = xml.write(filter_1_1.write(filter));
+
+        function myfun(data){
+            console.log(data.crs.properties.name);
+        }
+
+        $.ajax({
+            url: "http://dt.yuhang.gov.cn/geocloud/wfs",
+            data:{
+                typeName: "yhmap:poi",
+                REQUEST: "GetFeature",
+                SERVICE: "WFS",
+                FILTER: str,
+                outputFormat: "text/javascript", /*/返回JSONP/*/
+                format_options: "callback:myfun", /*/不指定时默认的回调函数名是parseResponse,就必须有这个方法/*/
+                VERSION: "1.1.0"
+            },
+            type:"POST",
+            dataType: "jsonp"
+        });
+        function parseResponse(data){
+            alert(data);
+        }
+
+    </script>
+</head>
+<body onload="init()">
+<div id="map" style="position:absolute;width:890px;height:600px;"></div>
+
+</body>
+</html>

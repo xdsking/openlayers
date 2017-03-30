@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.12.1/ol.css">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ol3/3.12.1/ol-debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+    <script src="../CDN/lib/jQuery/jQuery-1.11.1.js"></script>
+
+</head>
+<body>
+<div id="map" class="map"></div>
+<div id="popup" class="ol-popup fouc">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+
+    <div id="popup-content"></div>
+</div>
+<span id="status">&nbsp;0 selected features</span>
+<script>
+    sourceVector = new ol.source.Vector({
+        loader: 'http://ec2-52-4-30-207.compute-1.amazonaws.com/geoserver/egsc/wfs',
+        loader: function (extent, resolution, projection) {
+            $.ajax('http://ec2-52-4-30-207.compute-1.amazonaws.com/geoserver/egsc/wfs', {
+                type: 'GET',
+                data: {
+                    service: 'WFS',
+                    version: '1.1.0',
+                    request: 'GetFeature',
+                    typename: 'egsc:scorr_sites',
+                    srsname: 'EPSG:3857',
+                    outputFormat: 'text/javascript', // jsonp
+                    bbox: extent.join(',') + ',EPSG:3857'
+                },
+                dataType: 'jsonp',
+                jsonpCallback: 'callback:loadFeatures',
+                jsonp: 'format_options'
+            });
+        },
+        strategy: ol.loadingstrategy.tile(ol.tilegrid.createXYZ({
+            maxZoom: 19
+        }))
+    });
+
+    clusterSource = new ol.source.Cluster({
+        distance: 20,
+        source: sourceVector
+    });
+
+    window.loadFeatures = function (response) {
+        geoJSON = new ol.format.GeoJSON();
+        sourceVector.addFeatures(geoJSON.readFeatures(response));
+    };
+
+    TextFill = new ol.style.Fill({
+        color: '#000'
+    });
+    TextStroke = new ol.style.Stroke({
+        color: '#fff',
+        width: 3
+    });
+    getText = function (feature, resolution) {
+        var maxResolution = 2400;
+        var text = feature.get('name');
+
+        if (resolution > maxResolution) {
+            text = '';
+        }
+        return text;
+    };
+    textStyle = new ol.style.Text({
+        font: '12px Calibri,sans-serif',
+        //text: getText(feature, resolution),
+        text: 'TEST',
+        fill: TextFill,
+        stroke: TextStroke
+    });
+
+    styleCache = {};
+    layerVector = new ol.layer.Vector({
+        source: clusterSource,
+        /*
+         style: new ol.style.Style({
+         image: new ol.style.Circle({
+         radius: 3,
+         fill: new ol.style.Fill({
+         color: 'red'
+         }),
+         stroke: new ol.style.Stroke({
+         color: 'black',
+         width: 1
+         })
+         //text: textStyle
+         })
+         })
+         */
+        style: function (feature, resolution) {
+            var size = feature.get('features').length;
+            if (size > 100) {
+                var style = styleCache[size];
+                var radius = 30;
+                var fillColor = '#3399CC';
+            }
+            else if (size > 50) {
+                var style = styleCache[size];
+                var radius = 20;
+                var fillColor = '#3399CC';
+            }
+            else if (size > 25) {
+                var style = styleCache[size];
+                var radius = 15;
+                var fillColor = '#3399CC';
+            }
+            else if (size > 10) {
+                var style = styleCache[size];
+                var radius = 15;
+                var fillColor = '#3399CC';
+            }
+            else if (size > 1) {
+                var style = styleCache[size];
+                var radius = 10;
+                var fillColor = '#3399CC';
+            }
+            else if (size == 1) {
+                var style = styleCache[size];
+                var radius = 10;
+                var fillColor = '#ff0000';
+            }
+            //var style = styleCache[size];
+            //var magnitude = (size > 0) ? parseInt(size/2) : 1;
+            //var radius = 1 * ( (magnitude-5 > 0) ? magnitude : 1);
+            if (!style) {
+                style = [new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: radius, //10,
+                        stroke: new ol.style.Stroke({
+                            color: '#fff'
+                        }),
+                        fill: new ol.style.Fill({
+                            //color: '#3399CC'
+                            color: fillColor
+                        })
+                    }),
+                    text: new ol.style.Text({
+                        text: size.toString(),
+                        fill: new ol.style.Fill({
+                            color: '#fff'
+                        })
+                    })
+                })];
+                styleCache[size] = style;
+            }
+            return style;
+        }
+    });
+
+    var map = new ol.Map({
+        layers: [new ol.layer.Tile({
+            source: new ol.source.OSM()
+        }), layerVector],
+        target: document.getElementById('map'),
+        view: new ol.View({
+            center: ol.proj.transform([-74.4, 40.2],
+                    'EPSG:4326', 'EPSG:3857'),
+            zoom: 5,
+            maxZoom: 19
+        })
+    });
+
+    // POPUP
+    var container = document.getElementById('popup'),
+            content = document.getElementById('popup-content'),
+            closer = document.getElementById('popup-closer');
+    /**
+     * Create an overlay to anchor the popup to the map.
+     */
+    var overlay = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
+    }));
+    map.addOverlay(overlay);
+    /**
+     * Add a click handler to hide the popup.
+     * @return {boolean} Don't follow the href.
+     */
+    closer.onclick = function () {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+    };
+    // POPUP TEMPLATE
+    var templateContents = $("#popupTemplate").html(),
+            popupTemplate = _.template(templateContents);
+
+
+    var selectClick = new ol.interaction.Select({
+        condition: ol.events.condition.click
+    });
+    map.addInteraction(selectClick);
+    selectClick.on('select', function (e) {
+        var properties = e.selected[0].getProperties().features[0].getProperties();
+        var renderedContent = popupTemplate(properties);
+        var coordinate = e.mapBrowserEvent.coordinate;
+        var siteLon = properties['Longitude_'],
+                siteLat = properties['Latitude_D'],
+                siteCoord = ol.proj.transform([parseFloat(siteLon), parseFloat(siteLat)],
+                        'EPSG:4326', 'EPSG:3857'); // Actual site position
+        content.innerHTML = popupTemplate(properties);
+        overlay.setPosition(siteCoord);
+    });
+</script>
+</body>
+</html>

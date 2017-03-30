@@ -1,0 +1,59 @@
+﻿<html>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>wmts example</title>
+    <head>
+        <link rel="stylesheet" href="http://openlayers.org/en/v3.15.1/css/ol.css" type="text/css">
+        <!--<script src="../CDN/lib/ol/v3.14.2/build/ol.js"></script>-->
+        <script src="http://openlayers.org/en/v3.15.1/build/ol.js"></script>
+        <script src="../CDN/lib/jQuery/jQuery-1.11.1.js"></script>
+        <script type="text/javascript">
+            //var f = ol.format.ogc.filter;
+            //var f = ol.format.wfs.filter;
+            /*var featureRequest = new ol.format.WFS().writeGetFeature({
+                srsName: 'EPSG:4490',
+                featureNS: 'http://dt.yuhang.gov.cn',
+                featurePrefix: 'yhmap',
+                featureTypes: ['poi'],
+                outputFormat: 'application/json'*//*,
+                filter: f.and(
+                        f.like('name', 'Mississippi*'),
+                        f.equalTo('waterway', 'riverbank')
+                )*//*
+            });*/
+            var featureRequest = new ol.format.WFS().writeGetFeature({
+                srsName: 'EPSG:3857',
+                featureNS: 'http://openstreemap.org',
+                featurePrefix: 'osm',
+                featureTypes: ['water_areas'],
+                outputFormat: 'application/json'/*,
+                filter: f.and(
+                        f.like('name', 'Mississippi*'),
+                        f.equalTo('waterway', 'riverbank')
+                )*/
+            });
+            //var data=new XMLSerializer().serializeToString(featureRequest);
+            fetch('http://dt.yuhang.gov.cn/geocloud/wfs', {
+                method: 'POST',
+                mode:"no-cors",
+                body: new XMLSerializer().serializeToString(featureRequest)
+            }).then(function(response) {
+                return response.json();
+            }).then(function(json) {
+                debugger;
+            });
+            /*function myfun(data){
+                alert(data.crs.properties.name);
+            }
+            $.ajax({
+                url: "http://dt.yuhang.gov.cn/geocloud/wfs",
+                data:data,
+                dataType: "jsonp",
+                jsonpCallback: "myfun"
+            });*/
+        </script>        
+    </head>
+    <body onload="">
+        <div id="map" style="position:absolute;width:890px;height:600px;"></div>
+        
+    </body>
+</html>

@@ -1,0 +1,44 @@
+[
+    {
+        "id": 12,
+        "name": "主干道",
+        "type": "WMS",
+        "groupId": 1206,
+        "queryable": true,
+        "url": "http://dt.yuhang.gov.cn/geocloud/wms",
+        "params": {
+            "LAYERS": "yhmap:tra_net_ln",
+            "FORMAT": "image/png",
+            "VERSION": "1.1.1",
+            "STYLES":"tra_guodao",
+            "fields": [
+                {
+                    "field": "FNAME",
+                    "alias": "名称"
+                }
+            ]
+        },
+        "updateTime": "2012-01-12"
+    },
+    {
+        "id": 11,
+        "name": "次干道",
+        "type": "WMS",
+        "groupId": 1207,
+        "queryable": true,
+        "url": "http://dt.yuhang.gov.cn/geocloud/wms",
+        "params": {
+            "LAYERS": "yhmap:tra_net_ln",
+            "FORMAT": "image/png",
+            "VERSION": "1.1.1",
+            "STYLES":"tra_cigandao",
+            "fields": [
+                {
+                    "field": "FNAME",
+                    "alias": "名称"
+                }
+            ]
+        },
+        "updateTime": "2012-01-13"
+    }
+]

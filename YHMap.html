@@ -1,0 +1,25 @@
+﻿<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>余杭</title>
+<head>
+    <link rel="stylesheet" type="text/css" href="../CDN/lib/ol/v3.14.2/css/ol.css">
+    <link rel="stylesheet" type="text/css" href="css/YHMap.css">
+    <script src="../CDN/lib/jQuery/jQuery-1.11.1.js"></script>
+    <script src="../CDN/lib/ol/v3.14.2/build/ol.js"></script>
+    <script src="js/conf_4490.js"></script>
+    <script data-main="js/main.js" src="../CDN/lib/requireJS/require.js"></script>
+    <script type="text/javascript">
+        var map, ly;
+        $(function () {
+            init_wmts();
+            //map.on("dblclick",function(){return false;})
+        });
+    </script>
+</head>
+<body onload="">
+<div id="map">
+    <div id="opPane"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+﻿<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>余杭</title>
+<head>
+    <link rel="stylesheet" type="text/css" href="../CDN/lib/ol/v3.14.2/css/ol.css">
+    <link rel="stylesheet" type="text/css" href="css/YHMap.css">
+    <link type="text/css" rel="stylesheet" href="js/widget/infoWindow/infoWindow.css">
+    <style rel="stylesheet">
+        @media print
+        {
+            .no-print {display:none;}
+        }
+    </style>
+    <script src="../CDN/lib/jQuery/jQuery-1.11.1.js"></script>
+    <script src="../CDN/lib/ol/v3.14.2/build/ol.js"></script>
+    <script src="js/conf_4490_tdt.js"></script>
+    <script data-main="js/main_infoWindow.js" src="../CDN/lib/requireJS/require.js"></script>
+    <script type="text/javascript">
+        var map, ly;
+        $(function () {
+            init_wmts();
+            var p1 = new ol.geom.Point([119.92366790771486, 30.376338958740234]);
+            var p2 = new ol.geom.Point([119.84676361083986, 30.388011932373047]);
+            var p3 = new ol.geom.Point([120.10013580322267, 30.415821075439453]);
+            var f1 = new ol.Feature(p1);
+            var properties = {
+                "name": "广告公司",
+                "address": "解放路56号",
+                "phone": "83225178",
+                "website": "www.baidu.com",
+                "summary": "返回一个HTML字符串，用于追加到每一个匹配元素的里边。接受两个参数，index参数为对象在这个集合中的索引值，html参数为这个对象原先的html值。"
+            };
+            var fields = [
+                {
+                    "field": "name",
+                    "alias": "名称",
+                    "type": "title"
+                },
+                {
+                    "field": "address",
+                    "alias": "地址"
+                },
+                {
+                    "field": "phone",
+                    "alias": "电话电话"
+                },
+                {
+                    "field": "website",
+                    "alias": "网址",
+                    "type": "url"
+                },
+                {
+                    "field": "summary",
+                    "alias": "描述"
+                }
+            ];
+            f1.setProperties(properties);
+            //f1.fields = fields;
+            var f2 = new ol.Feature(p2);
+            f2.setProperties(properties);
+            f2.fields = fields;
+            var f3 = new ol.Feature(p3);
+            f3.setProperties(properties);
+            f3.fields = fields;
+            var vectorSource = new ol.source.Vector({
+                features: [f1, f2, f3]
+            });
+            var vectorLayer = new ol.layer.Vector({
+                source: vectorSource,
+                style: new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: "images/1-1.png",
+                        anchor: [0.5, 1]
+                    })
+                })
+            });
+            map.addLayer(vectorLayer);
+        });
+    </script>
+</head>
+<body onload="">
+<div id="map">
+</div>
+<div class="op-pane no-print" style="position: absolute;top: 10px;right: 10px;">
+    <button id="hideInfoWindow">隐藏InfoWindow</button>
+    <button id="destroyInfoWindow">销毁InfoWindow</button>
+    <button id="printer" onclick="javascript:window.print();">打印</button>
+</div>
+</body>
+</html>

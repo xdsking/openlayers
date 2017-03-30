@@ -1,0 +1,109 @@
+﻿<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>wmts example</title>
+<head>
+    <link rel="stylesheet" type="text/css" href="../CDN/lib/ol/v3.14.2/css/ol.css">
+    <style rel="stylesheet">
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script src="../CDN/lib/ol/v3.14.2/build/ol-debug.js"></script>
+    <script src="../CDN/lib/jQuery/jQuery-1.11.1.js"></script>
+    <script src="js/conf_4490.js"></script>
+    <script type="text/javascript">
+        var map;
+        function jsonpCallback(data) {
+            var vectorSource = new ol.source.Vector({
+                features: (new ol.format.GeoJSON()).readFeatures(data)
+            });
+            var fill = new ol.style.Fill({
+                color: 'rgba(255,255,255,0.4)'
+            });
+            var stroke = new ol.style.Stroke({
+                color: '#3399CC',
+                width: 1.25
+            });
+            var style = new ol.style.Style({
+                image: new ol.style.Circle({
+                    fill: fill,
+                    stroke: stroke,
+                    radius: 2
+                }),
+                fill: fill,
+                stroke: stroke
+            });
+            var imageStyle = new ol.style.Style({
+                image: new ol.style.Icon({
+                    src: "images/1-3.png",
+                    anchor: [0.5, 1]
+                })
+            });
+            var vector = new ol.layer.Vector({
+                source: vectorSource,
+                style: style
+            });
+            map.addLayer(vector);
+        }
+        var getdata=function(){
+            getdataCallback=function(data){
+                debugger;
+            };
+            $.ajax({
+                url: "http://dt.yuhang.gov.cn/geocloud/wfs",
+                /*contentType: "application/x-www-form-urlencoded;charset=UTF-8",*/
+                data: {
+                    typename: "yhmap:bou_py",
+                    request: "GetFeature",
+                    service: "WFS",
+                    FILTER: '<Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml">' +
+                            '<PropertyIsEqualTo><PropertyName>FEATUREGUI</PropertyName><Literal>2ab9af9fdaeb4a119860951e7eecfb9a</Literal></PropertyIsEqualTo>' +
+                            '</Filter>',
+                    outputFormat: "text/javascript",
+                    format_options: "callback:getdataCallback",
+                    version: "1.0.0"
+                },
+                dataType: "jsonp"
+            });
+        };
+        $(function () {
+            init_wmts();
+            $("#getdata").click(function(){
+                getdata();
+            });
+            getdata();
+            $.ajax({
+                url: "http://dt.yuhang.gov.cn/geocloud/wfs",
+                /*contentType: "application/x-www-form-urlencoded;charset=UTF-8",*/
+                data: {
+                    typename: "yhmap:poi",
+                    request: "GetFeature",
+                    service: "WFS",
+                    FILTER: '<Filter xmlns:ogc="http://www.opengis.net/ogc" xmlns:gml="http://www.opengis.net/gml"><And>' +
+                            '<PropertyIsEqualTo><PropertyName>FCODE</PropertyName><Literal>140309</Literal></PropertyIsEqualTo>' +
+                        '<PropertyIsEqualTo><PropertyName>UPDATESTAT</PropertyName><Literal>A</Literal></PropertyIsEqualTo>' +
+                        '<Intersects><PropertyName>the_geom</PropertyName><Polygon><outerBoundaryIs><LinearRing><coordinates>119.96040344238281,30.409126281738285 119.9652099609375,30.36655426025391 120.00846862792969,30.37479400634766 119.96040344238281,30.409126281738285</coordinates></LinearRing></outerBoundaryIs></Polygon></Intersects>' +
+                            '</And></Filter>',
+                    /*FILTER: "<Filter><PropertyIsEqualTo><PropertyName>STYLENAME</PropertyName><Literal>企事业单位</Literal></PropertyIsEqualTo></Filter>",*/
+                    outputFormat: "text/javascript",
+                    format_options: "callback:jsonpCallback",
+                    version: "1.0.0"
+                },
+                dataType: "jsonp"
+            });
+            map.on("singleclick", function (evt) {
+                console.log(evt.coordinate);
+
+            });
+        });
+    </script>
+</head>
+<body onload="">
+<div id="map" style="position:absolute;width:100%;height:100%;"></div>
+<div style="position: fixed;top:0;right: 0">
+    <button id="getdata">获取行政区数据</button>
+</div>
+</body>
+</html>

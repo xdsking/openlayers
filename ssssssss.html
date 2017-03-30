@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="../CDN/lib/ol/v3.14.2/css/ol.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        #map {
+            position: fixed;
+            height: 100%;
+            width: 100%;
+        }
+
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 280px;
+        }
+
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+        }
+
+        .ol-popup-closer:after {
+            content: "✖";
+        }
+    </style>
+    <script src="../CDN/lib/ol/v3.14.2/build/ol.js"></script>
+    <title>OpenLayers 3 example</title>
+</head>
+<body>
+<div id="map"></div>
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+
+    <div id="popup-content"></div>
+</div>
+<script type="text/javascript">
+    var container = document.getElementById('popup');
+    var content = document.getElementById('popup-content');
+    var closer = document.getElementById('popup-closer');
+    var overlay = new ol.Overlay(({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+            duration: 250
+        }
+    }));
+    closer.onclick = function () {
+        overlay.setPosition(undefined);
+        closer.blur();
+        return false;
+    };
+
+    //popup end
+    var source = new ol.source.Vector({
+        url: 'data/layers/7day-M2.5.json',
+        format: new ol.format.GeoJSON()
+    });
+    var style = new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 7,
+            fill: new ol.style.Fill({
+                color: [0, 153, 255, 1]
+            }),
+            stroke: new ol.style.Stroke({
+                color: [255, 255, 255, 0.75],
+                width: 1.5
+            })
+        }),
+        zIndex: 100000
+    });
+    var select = new ol.interaction.Select({style: style});
+    var modify = new ol.interaction.Modify({
+        features: select.getFeatures()
+    });
+    var map = new ol.Map({
+        interactions: ol.interaction.defaults().extend([select, modify]),
+        overlays: [overlay],
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                title: 'Global Imagery',
+                source: new ol.source.TileWMS({
+                    url: 'http://demo.opengeo.org/geoserver/wms',
+                    params: {LAYERS: 'nasa:bluemarble', VERSION: '1.1.1'}
+                })
+            }),
+            new ol.layer.Vector({
+                title: 'Earthquakes',
+                source: source,
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 5,
+                        fill: new ol.style.Fill({
+                            color: '#0000FF'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#000000'
+                        })
+                    })
+                })
+            })
+        ],
+        view: new ol.View({
+            projection: 'EPSG:3857',
+            center: [0, 0],
+            zoom: 3
+        })
+    });
+    map.on('singleclick', function (evt) {
+        var coordinate = evt.coordinate;
+        content.innerHTML = '<p>You clicked here:</p><code>' + '</code>';
+        overlay.setPosition(coordinate);
+    });
+</script>
+</body>
+</html>
